@@ -1,0 +1,8 @@
+<%@ page import="java.sql.*" %>
+<%
+	/* MySQL 연동 */
+	String url = "jdbc:mysql://localhost/oursubway?useSSL=false";
+	Class.forName("com.mysql.jdbc.Driver");
+	Connection conn = DriverManager.getConnection(url, "root", "csedbadmin");
+	Statement statement = conn.createStatement();
+%>

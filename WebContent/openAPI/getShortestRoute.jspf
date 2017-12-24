@@ -1,0 +1,31 @@
+<!-- 7 최단경로 정보 -->
+<%@ include file="swopenAPIseoulgokr.jspf" %>
+<%
+	String serviceName = "shortestRoute";
+	String[] paramList = new String[2];
+	paramList[0] = request.getParameter("statnFnm");
+	paramList[1] = request.getParameter("statnTnm");
+
+	// URL예시) http://swopenAPI.seoul.go.kr/api/subway/6963566d76746169313039764b4b7177/xml/shortestRoute/0/5/소요산/잠실나루
+	ServiceProvider svc = new ServiceProvider();
+	URL url = svc.getURL(serviceName, 1, 200, paramList); // swopenAPIseoulgokr.jspf
+	URLConnection conn = svc.connect(url);
+	Document xml = null;
+	Vector<String> routeInfo = new Vector<>();
+	
+	try {
+		xml = svc.getXML(conn.getInputStream());
+		int[] selected = {
+				5, 6, 8, 11, 12, 13, 15, 18, 19, 20, 21, 22
+		}; // 출력할 값 선택
+		svc.parseXML(routeInfo, xml, selected);
+	} catch(Exception e) {
+		;
+	}
+	/* rowNum(0) | selectedCount(1) | totalCount(2) | 출발역ID(3) | 도착역ID(4) | 출발역(5) | 도착역(6) |
+	 * 최단시간 경유역ID(7) | 최단시간 경유역(8) | 최단시간 환승 예정메시지(9) | 최단시간 도착 예정메시지(10) |
+	 * 최단시간 경유역수(11) | 최단시간 도착예정시간(12) | 최단시간 환승횟수(13) |
+	 * 최소환승 경유역ID(14) | 최소환승 경유역(15) | 최소환승 환승 예정메시지(16) | 최소환승 도착 예정메시지(17) |
+	 * 최소환승 경유역수(18) | 최소환승 도착예정시간(19) | 최소환승 환승횟수(20) |
+	 * 최단경로좌표(x,y)(21) | 최소환승좌표(x,y)(22) */
+%>

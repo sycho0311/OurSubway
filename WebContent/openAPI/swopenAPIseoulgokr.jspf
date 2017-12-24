@@ -1,0 +1,103 @@
+<%@ page
+	import="java.util.*"
+	import="java.io.*"
+	import="java.net.*"
+	import="javax.xml.parsers.DocumentBuilderFactory"
+	import="javax.xml.parsers.DocumentBuilder"
+	import="org.w3c.dom.Document"
+	import="org.w3c.dom.NodeList"
+	import="org.w3c.dom.Node" %>
+<%
+	class ServiceProvider {
+		final private String serviceHost = "http://swopenAPI.seoul.go.kr/api/subway";
+		final private String serviceKey = "6963566d76746169313039764b4b7177";
+
+		/* URL 구성 */
+		public URL getURL(String serviceName, int start_idx, int end_idx, String[] paramList) {
+			String params = "";
+			try {
+				for (String param : paramList) {
+					params += URLEncoder.encode(param, "utf-8") + "/";
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			StringBuilder builder = new StringBuilder(
+				serviceHost + "/" + serviceKey + "/" + "xml/" + serviceName + "/" + 
+				start_idx + "/" + end_idx + "/" + params);
+
+			try {
+				return new URL(builder.toString());
+			} catch (MalformedURLException e) {
+				return null; // TODO: Error Page
+			}
+		}
+
+		/* URL 연결 */
+		public HttpURLConnection connect(URL url) {
+			try {
+				HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+				conn.setRequestMethod("GET");
+				conn.setRequestProperty("Content-type", "application/xml");
+
+				// 참고: https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#2xx_Success
+				if (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300)
+					return conn; // 연결 성공
+				else
+					return null; // 연결 실패
+			} catch (IOException e) {
+				e.printStackTrace();
+				return null; // TODO: Error Page
+			}
+		}
+
+		/* XML로드 */
+		public Document getXML(InputStream in) {
+			try {
+				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance(); 
+				DocumentBuilder builder = factory.newDocumentBuilder();
+				Document xml = builder.parse(in);
+				return xml;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null; // TODO: Error Page
+			}
+		}
+		
+		/* XML파싱 */
+		public String parseXML(Document xml, int[] selected) {
+			String data = "";
+			NodeList rows = xml.getElementsByTagName("row");
+
+			Node row = rows.item(0);
+			NodeList items = row.getChildNodes();
+
+			for (int i : selected) {
+				Node item = items.item(i);
+				data += item.getTextContent();
+			}
+			data += "<BR/>";
+
+			return data;
+		}
+		
+		/* XML파싱 */
+		public void parseXML(Vector<String> set, Document xml, int[] selected) {
+			if (xml == null)
+				return;
+			NodeList rows = xml.getElementsByTagName("row");
+			Node row = null;
+			row = rows.item(0);
+			if (row == null)
+				return;
+
+			NodeList items = row.getChildNodes();
+
+			for (int i : selected) {
+				Node item = items.item(i);
+				set.add(item.getTextContent());
+			}
+		}
+
+	}
+%>
